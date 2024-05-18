@@ -18,11 +18,14 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
+#include <memory/paddr.h>
 
 static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
+void wp_display();
+bool wp_check();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -54,6 +57,71 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+static int cmd_si(char *args) {
+  int n = 1;
+  if (args != NULL) {
+    sscanf(args, "%d", &n);
+  }
+  cpu_exec(n);
+  return 0;
+}
+
+static int cmd_info(char *args) {
+  if (args == NULL) {
+    printf("Please specify 'r' for registers or 'w' for watchpoints.\n");
+    return 0;
+  }
+
+  if (strcmp(args, "r") == 0) {
+    isa_reg_display();
+  } else if (strcmp(args, "w") == 0) {
+    wp_display();
+  } else {
+    printf("Unknown argument for info: %s\n", args);
+  }
+
+  return 0;
+}
+
+static int cmd_x(char *args) {
+  if (args == NULL) {
+    printf("Usage: x N EXPR\n");
+    return 0;
+  }
+  char *ptr;
+  int n = strtol(args, &ptr, 10);
+  paddr_t addr = 0;
+  sscanf(ptr, "%x", &addr);
+  if (sscanf(ptr, "%x", &addr) == EOF) {
+    printf("Usage: x N EXPR\n");
+    return 0;
+  }
+  else {
+    for (int i = 0; i < n; i++) {
+      word_t content = paddr_read(addr + i * 4, 4);
+      printf("0x%x    %08x\n", addr + i * 4, content);
+    }
+  }
+  return 0;
+}
+
+static int cmd_p(char *args) {
+  if (args == NULL) {
+    printf("Usage: p EXPR\n");
+    return 0;
+  }
+
+  bool success = true;
+  word_t result = expr(args, &success);
+
+  if (success) {
+    printf("%s = %u\n", args, result);
+  } else {
+    printf("Invalid expression: %s\n", args);
+  }
+  return 0;
+}
+
 static struct {
   const char *name;
   const char *description;
@@ -62,7 +130,12 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-
+  { "si", "si [N] Execute the program for N steps and then pause. If N is not given, the default is 1", cmd_si },
+  { "info", "info r Print register state, info w Print watchpoint information", cmd_info },
+  { "x", "x N EXPR Evaluate the expression EXPR, use the result as the starting memory address, and output N consecutive 4-byte values in hexadecimal", cmd_x },
+  { "p", "p EXPR Evaluate the expression EXPR", cmd_p },
+  // { "w", "w EXPR Pause program execution when the value of expression EXPR changes", cmd_w },
+  // { "d", "d N Delete the watchpoint with index N", cmd_d },
   /* TODO: Add more commands */
 
 };
