@@ -30,4 +30,14 @@ static inline const char* reg_name(int idx) {
   return regs[check_reg_idx(idx)];
 }
 
+#define MSTATUS 0x300
+#define MTVEC 0x305
+#define MSCRATCH 0x340
+#define MEPC 0x341
+#define MCAUSE 0x342
+#define SATP 0x180
+
+#define csr(idx) (cpu.csrs[idx])
+#define CSR(idx) csr(idx)
+
 #endif

@@ -87,6 +87,24 @@
 #define BITS(x, hi, lo) (((x) >> (lo)) & BITMASK((hi) - (lo) + 1)) // similar to x[hi:lo] in verilog
 #define SEXT(x, len) ({ struct { int64_t n : len; } __x = { .n = x }; (uint64_t)__x.n; })
 
+#define ECALL(dnpc) do { \
+  dnpc = (isa_raise_intr(0x0b, s->pc)); \
+  IFDEF(CONFIG_ETRACE, ETRACE_PRINT); \
+  } while(0)
+/* a7 stored to mcause */
+
+// clear MIE(4th bit) flag
+// set MPIE to MIE
+// set MPIE to 1
+// clear MPP flag to consistent with spike
+#define MRET { \
+  s->dnpc = cpu.csrs[MEPC]; \
+  cpu.csrs[MSTATUS] &= ~(1<<3); \
+  cpu.csrs[MSTATUS] |= ((cpu.csrs[MSTATUS]&(1<<7))>>4); \
+  cpu.csrs[MSTATUS] |= (1<<7); \
+  cpu.csrs[MSTATUS] &= ~((1<<11)+(1<<12)); \
+}
+
 #define ROUNDUP(a, sz)   ((((uintptr_t)a) + (sz) - 1) & ~((sz) - 1))
 #define ROUNDDOWN(a, sz) ((((uintptr_t)a)) & ~((sz) - 1))
 
@@ -106,5 +124,6 @@
 #define io_write(reg, ...) \
   ({ reg##_T __io_param = (reg##_T) { __VA_ARGS__ }; \
     ioe_write(reg, &__io_param); })
+
 
 #endif
