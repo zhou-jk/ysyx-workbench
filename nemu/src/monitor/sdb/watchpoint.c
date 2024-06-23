@@ -13,6 +13,7 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
+#ifdef CONFIG_WATCHPOINT
 #include "sdb.h"
 
 #define NR_WP 32
@@ -43,7 +44,7 @@ void init_wp_pool() {
 
 /* TODO: Implement the functionality of watchpoint */
 
-void new_wp(char *arg) {
+void wp_new(char *arg) {
   Assert(free_ != NULL, "No free node");
   bool success;
   uint32_t val = expr(arg, &success);
@@ -66,7 +67,7 @@ void new_wp(char *arg) {
   return;
 }
 
-void free_wp(int index) {
+void wp_free(int index) {
   Assert(0 <= index && index < NR_WP, "Invalid index");
   Assert(head != NULL, "Watchpoint does not exist");
 
@@ -126,3 +127,4 @@ bool wp_check() {
   return have_changed;
 }
 
+#endif

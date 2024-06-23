@@ -102,15 +102,14 @@ int strncmp(const char *lhs, const char *rhs, size_t count) {
 
 void *memset(void *dest, int ch, size_t count) {
   uint8_t *pd = (uint8_t *)dest;
-  uint8_t byte_value = (uint8_t)ch;
-  uint32_t word_value;
+  const uint8_t byte_value = (uint8_t)ch;
+  const size_t word_value = (byte_value << 24) | (byte_value << 16) | (byte_value << 8) | byte_value;
+  const size_t word_size = sizeof(size_t);
 
-  word_value = (byte_value << 24) | (byte_value << 16) | (byte_value << 8) | byte_value;
-
-  while (count >= 4) {
-    *(uint32_t *)pd = word_value;
-    pd += 4;
-    count -= 4;
+  while (count >= word_size) {
+    *(size_t *)pd = word_value;
+    pd += word_size;
+    count -= word_size;
   }
 
   while (count > 0) {
@@ -140,12 +139,13 @@ void *memmove(void *dest, const void *src, size_t count) {
 void *memcpy(void *dest, const void *src, size_t count) {
   uint8_t *pd = (uint8_t *)dest;
   const uint8_t *ps = (const uint8_t *)src;
+  const size_t word_size = sizeof(size_t);
 
-  while (count >= 4) {
-    *(uint32_t *)pd = *(const uint32_t *)ps;
-    pd += 4;
-    ps += 4;
-    count -= 4;
+  while (count >= word_size) {
+    *(size_t *)pd = *(const size_t *)ps;
+    pd += word_size;
+    ps += word_size;
+    count -= word_size;
   }
 
   while (count > 0) {
@@ -155,12 +155,13 @@ void *memcpy(void *dest, const void *src, size_t count) {
   return dest;
 }
 int memcmp(const void *lhs, const void *rhs, size_t count) {
-  const uint8_t *p1 = (const uint8_t *)lhs;
-  const uint8_t *p2 = (const uint8_t *)rhs;
+  const unsigned char *p1 = (const unsigned char *)lhs;
+  const unsigned char *p2 = (const unsigned char *)rhs;
+  const size_t word_size = sizeof(size_t);
 
-  while (count >= 4) {
-    uint32_t u1 = *(const uint32_t *)p1;
-    uint32_t u2 = *(const uint32_t *)p2;
+  while (count >= word_size) {
+    size_t u1 = *(const size_t *)p1;
+    size_t u2 = *(const size_t *)p2;
 
     if (u1 != u2) {
       while (*p1 == *p2) {
@@ -171,9 +172,9 @@ int memcmp(const void *lhs, const void *rhs, size_t count) {
       return *p1 < *p2 ? -1 : 1;
     }
 
-    p1 += 4;
-    p2 += 4;
-    count -= 4;
+    p1 += word_size;
+    p2 += word_size;
+    count -= word_size;
   }
 
   while (count > 0) {

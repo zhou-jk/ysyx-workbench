@@ -23,9 +23,14 @@
 static int is_batch_mode = false;
 
 void init_regex();
+
+#ifdef CONFIG_WATCHPOINT
 void init_wp_pool();
 void wp_display();
 bool wp_check();
+void wp_new(char *arg);
+void wp_free(int index);
+#endif
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -76,7 +81,12 @@ static int cmd_info(char *args) {
   if (strcmp(args, "r") == 0) {
     isa_reg_display();
   } else if (strcmp(args, "w") == 0) {
+#ifdef CONFIG_WATCHPOINT
     wp_display();
+#else
+    printf("Please enable watchpoint at nemu menuconfig\n");
+#endif
+
   } else {
     printf("Unknown argument for info: %s\n", args);
   }
@@ -123,6 +133,31 @@ static int cmd_p(char *args) {
   return 0;
 }
 
+static int cmd_w(char *args) {
+  char *arg = strtok(NULL, " ");
+#ifdef CONFIG_WATCHPOINT
+  new_wp(arg);
+#else
+  printf("Please enable watchpoint at nemu menuconfig\n");
+#endif
+  return 0;
+}
+
+static int cmd_d(char *args) {
+  int id = 0;
+  if (args == NULL) {
+    printf("Please input the index of watchpoint!\n");
+    return 0;
+  }
+  sscanf(args, "%d", &id);
+#ifdef CONFIG_WATCHPOINT
+  free_wp(id);
+#else
+  printf("Please enable watchpoint at nemu menuconfig\n");
+#endif
+  return 0;
+}
+
 static struct {
   const char *name;
   const char *description;
@@ -135,8 +170,8 @@ static struct {
   { "info", "info r Print register state, info w Print watchpoint information", cmd_info },
   { "x", "x N EXPR Evaluate the expression EXPR, use the result as the starting memory address, and output N consecutive 4-byte values in hexadecimal", cmd_x },
   { "p", "p EXPR Evaluate the expression EXPR", cmd_p },
-  // { "w", "w EXPR Pause program execution when the value of expression EXPR changes", cmd_w },
-  // { "d", "d N Delete the watchpoint with index N", cmd_d },
+  { "w", "w EXPR Pause program execution when the value of expression EXPR changes", cmd_w },
+  { "d", "d N Delete the watchpoint with index N", cmd_d },
   /* TODO: Add more commands */
 
 };
@@ -212,6 +247,8 @@ void init_sdb() {
   /* Compile the regular expressions. */
   init_regex();
 
+#ifdef CONFIG_WATCHPOINT
   /* Initialize the watchpoint pool. */
   init_wp_pool();
+#endif
 }
