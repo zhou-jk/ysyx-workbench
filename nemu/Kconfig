@@ -157,7 +157,7 @@ config WATCHPOINT
 
 config IRINGTRACE
   depends on TRACE
-  string "Enable iring tracer"
+  bool "Enable iring tracer"
   default y
 
 config MTRACE

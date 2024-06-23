@@ -134,9 +134,9 @@ static int cmd_p(char *args) {
 }
 
 static int cmd_w(char *args) {
-  char *arg = strtok(NULL, " ");
 #ifdef CONFIG_WATCHPOINT
-  new_wp(arg);
+  char *arg = strtok(NULL, " ");
+  wp_new(arg);
 #else
   printf("Please enable watchpoint at nemu menuconfig\n");
 #endif
@@ -151,7 +151,7 @@ static int cmd_d(char *args) {
   }
   sscanf(args, "%d", &id);
 #ifdef CONFIG_WATCHPOINT
-  free_wp(id);
+  wp_free(id);
 #else
   printf("Please enable watchpoint at nemu menuconfig\n");
 #endif

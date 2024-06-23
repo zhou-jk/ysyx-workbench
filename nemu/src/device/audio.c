@@ -37,7 +37,9 @@ void sdl_audio_callback(void *userdata, uint8_t *stream, int len){
   /* Clear the stream. */
   SDL_memset(stream, 0, len);
   uint32_t cnt = audio_base[reg_count];
-  if(len > cnt) len = cnt;
+  if((uint32_t)len > cnt) {
+    len = cnt;
+  }
   
   uint32_t sbuf_size = audio_base[reg_sbuf_size];
   if(sbuf_pos + len > sbuf_size ){
