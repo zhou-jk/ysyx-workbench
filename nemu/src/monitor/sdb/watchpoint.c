@@ -44,7 +44,7 @@ void init_wp_pool() {
 
 /* TODO: Implement the functionality of watchpoint */
 
-void wp_new(char *arg) {
+void new_wp(char *arg) {
   Assert(free_ != NULL, "No free node");
   bool success;
   uint32_t val = expr(arg, &success);
@@ -67,7 +67,7 @@ void wp_new(char *arg) {
   return;
 }
 
-void wp_free(int index) {
+void free_wp(int index) {
   Assert(0 <= index && index < NR_WP, "Invalid index");
   Assert(head != NULL, "Watchpoint does not exist");
 
@@ -96,7 +96,7 @@ void wp_free(int index) {
   return;
 }
 
-void wp_display() {
+void display_wp() {
   if (head == NULL) {
     printf("No watchpoints.\n");
     return;
@@ -107,7 +107,7 @@ void wp_display() {
   return;
 }
 
-bool wp_check() {
+bool check_wp() {
   bool have_changed = false;
   for (WP *p = head; p != NULL; p = p->next) {
     uint32_t origin = p->val;

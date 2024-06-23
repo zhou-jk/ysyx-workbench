@@ -26,10 +26,10 @@ void init_regex();
 
 #ifdef CONFIG_WATCHPOINT
 void init_wp_pool();
-void wp_display();
-bool wp_check();
-void wp_new(char *arg);
-void wp_free(int index);
+void display_wp();
+bool check_wp();
+void new_wp(char *arg);
+void free_wp(int index);
 #endif
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
@@ -82,11 +82,10 @@ static int cmd_info(char *args) {
     isa_reg_display();
   } else if (strcmp(args, "w") == 0) {
 #ifdef CONFIG_WATCHPOINT
-    wp_display();
+    display_wp();
 #else
     printf("Please enable watchpoint at nemu menuconfig\n");
 #endif
-
   } else {
     printf("Unknown argument for info: %s\n", args);
   }
@@ -136,7 +135,7 @@ static int cmd_p(char *args) {
 static int cmd_w(char *args) {
 #ifdef CONFIG_WATCHPOINT
   char *arg = strtok(NULL, " ");
-  wp_new(arg);
+  new_wp(arg);
 #else
   printf("Please enable watchpoint at nemu menuconfig\n");
 #endif
@@ -151,7 +150,7 @@ static int cmd_d(char *args) {
   }
   sscanf(args, "%d", &id);
 #ifdef CONFIG_WATCHPOINT
-  wp_free(id);
+  free_wp(id);
 #else
   printf("Please enable watchpoint at nemu menuconfig\n");
 #endif

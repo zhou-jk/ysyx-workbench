@@ -1,4 +1,6 @@
 #include <common.h>
+#include <device/map.h>
+#include <isa.h>
 
 #ifdef CONFIG_IRINGTRACE
 #include <cpu/decode.h>
@@ -145,18 +147,6 @@ void parse_elf(const char *elf_file) {
   }
 
   free(elf);
-  return;
-}
-#endif
-
-#ifdef CONFIG_DTRACE
-void dtrace_read_display(void *addr, int len, IOMap *map) {
-  printf("dtrace: Drive Name = %s : read address = %p at pc = "FMT_WORD" with byte = %d\n", map->name, addr, cpu.pc, len);
-  return;
-}
- 
-void dtrace_write_display(void *addr, int len, word_t data, IOMap *map) {
-  printf("dtrace: Drive Name = %s : write address = %p at pc = "FMT_WORD" with byte = %d and data = "FMT_WORD" \n", map->name, addr, cpu.pc, len, data);
   return;
 }
 #endif
